@@ -1,0 +1,13 @@
+
+client.on('guildMemberRemove', async member => {
+	member.guild.members.cache.filter(s => db.fetch(`serverData.${member.guild.id}.botsData.${s.id}`)).forEach(x => {
+      let bot = db.fetch(`serverData.${member.guild.id}.botsData.${x.id}`);
+	  if(bot){
+	  if(bot.owner == member.id){
+             member.guild.members.ban(x, {reason: "Sahibi Sunucudan Ayrıldı."})
+	     db.set(`serverData.${member.guild.id}.botsData.${x.id}.status`, "Reddedildi")
+	     db.set(`serverData.${member.guild.id}.botsData.${x.id}.redReason`, "Sahibi Sunucudan Ayrıldı.")
+	  }
+    }
+  })
+})

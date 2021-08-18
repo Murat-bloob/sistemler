@@ -1,0 +1,19 @@
+
+  client.on("guildMemberAdd", member => {
+    let veri = db.fetch(`jail-kullanıcı_${member.id}_${member.guild.id}`)  
+    if(!veri) return
+    let kanal = db.fetch(`jail.log.${member.guild.id}`)
+    let cezalırol = db.fetch(`jail.karantinarole.${member.guild.id}`)
+    
+    member.roles.cache.forEach(a => {
+    member.roles.remove(a)
+    })
+    member.roles.add(cezalırol)
+    client.channels.cache.get(kanal).send(new Discord.MessageEmbed()
+   .setThumbnail(client.user.avatarURL())
+  .setColor(`#f8f8f9`) 
+   .setDescription(`
+    ${member.guild.name} Sunucusun'da önceden karantinaya alınan bir kullanıcı;
+    Geri karantinaya getirildi: ${member.user.tag} Kendisini uyanık sanıyor.
+    `))})
+// JAİL SON //

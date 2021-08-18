@@ -1,0 +1,78 @@
+
+client.on("ready", async (message) => {
+
+setInterval(() => {
+ 
+let datalar = db.all().filter(data => data.ID.startsWith("mute_"))  
+
+if(datalar.size < 0) return;
+
+datalar.forEach(datacık => {
+
+let kullanıcı = datacık.ID.replace("mute_", "")
+let data = db.fetch(`mute_${kullanıcı}`)
+
+
+let süre = data.ms - (Date.now() - data.başlangıç)
+
+let sunucu = client.guilds.cache.get(data.sunucu)
+if(!sunucu) return
+let member = sunucu.members.cache.get(kullanıcı)
+let kanal = sunucu.channels.cache.get(data.kanal)
+let sebep = data.sebep
+let moderator = client.users.cache.get(data.moderator)
+let mute_rol = sunucu.roles.cache.find(rol => rol.name.toLowerCase().includes("susturuldu") || rol.name.toLowerCase().includes("muted"))
+
+
+if(!member) {
+
+  let hata = new Discord.MessageEmbed()
+  .setTitle("EtherZ - Chat Mute Sistem")
+  .setDescription(`
+  <@${member.user.id}> isimli kullanıcının susturulması devam ettirelemdi!
+​
+Dikkat! **${member.user.id}** ID'sine sahip; **${moderator.tag}**
+ tarafından susturulan kullanıcı EtherZ - YouTube isimli sunucudan çıktığı için susturulması devam ettirelemedi!`)
+  .setColor("#f8f8f9")
+  kanal.send("<@!"+moderator.id+">", hata)
+db.delete(datacık.ID)
+
+return
+} 
+
+if(süre > 0) return
+
+let bitti = new Discord.MessageEmbed()
+.setTitle("EtherZ - Chat Mute Sistem")
+.setDescription(`
+<@${member.user.id}> isimli kullanıcının susturulma süresi doldu!
+​
+・Cezası biten kullanıcı → **<@${member.user.id}>**
+・Ceza veren yetkili → **${moderator.id}**
+・Ceza sebebi → **${sebep}**
+・Ceza bitiş tarihi → **${moment(Date.now()).format(" LL (DD/MM/yyyy) HH:mm:ss")}**
+`)
+.setColor("#f8f8f9")
+kanal.send("<@!"+member.user.id+">",bitti)
+
+
+
+
+member.roles.remove(mute_rol)
+db.delete(datacık.ID)
+})
+}, 5000);
+
+})
+
+
+
+client.on('guildMemberUpdate', async(om, nm) => {
+  if(om.roles === nm.roles) return;
+  if(nm.roles === client.user.id) return
+  let veri =await db.fetch(`mute_${nm.id}`)
+  if(!veri) return;
+let mute_rol = nm.guild.roles.cache.find(rol => rol.name.toLowerCase().includes("susturuldu") || rol.name.toLowerCase().includes("muted"))
+  nm.roles.add(mute_rol)
+  })
+// MUTE SON //
